@@ -3,89 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda Ágil - Vibras Positivas HM</title>
+    <title>Sistema Pro - Vibras Positivas HM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .branding-text { color: #2563eb; font-weight: bold; }
-        .btn-vibras { background-color: #2563eb; color: white; transition: 0.3s; }
-        .btn-vibras:hover { background-color: #1d4ed8; }
-    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
+<body class="bg-slate-100 min-h-screen flex flex-col font-sans">
 
     <!-- Header -->
-    <header class="bg-white shadow-md p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-gray-800">Mi Tienda Digital</h1>
-        <i class="fas fa-store text-blue-600 text-2xl"></i>
+    <header class="bg-blue-800 text-white p-4 shadow-xl sticky top-0 z-50 flex justify-between items-center">
+        <div>
+            <h1 class="text-lg font-bold">Colinas del Portal</h1>
+            <p class="text-[10px] uppercase tracking-widest opacity-70">Gestión de Inventario & Caja</p>
+        </div>
+        <div class="text-right">
+            <i class="fas fa-bolt text-yellow-400"></i>
+        </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="p-4 flex-grow">
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-            <p class="text-blue-700 text-sm">
-                <i class="fas fa-info-circle"></i> Haz que tu negocio crezca hoy mismo.
-            </p>
-        </div>
+    <main class="p-4 space-y-6 max-w-md mx-auto w-full pb-24">
+        
+        <!-- 1. RESUMEN DE CIERRE (Muestra el éxito del día) -->
+        <section class="bg-white p-4 rounded-2xl shadow-sm border border-blue-100">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="font-bold text-slate-700">Cierre del Día</h2>
+                <button onclick="resetearTodo()" class="text-[10px] bg-red-50 text-red-500 px-2 py-1 rounded">Reset</button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <p class="text-[10px] text-slate-500 uppercase">Ventas</p>
+                    <p id="displayVentas" class="text-lg font-bold text-slate-800">$ 0</p>
+                </div>
+                <div class="bg-green-50 p-3 rounded-xl border border-green-200">
+                    <p class="text-[10px] text-green-600 uppercase">Ganancia (EBITDA)</p>
+                    <p id="displayGanancia" class="text-lg font-bold text-green-700">$ 0</p>
+                </div>
+            </div>
+        </section>
 
-        <!-- Formulario Simple -->
-        <div class="bg-white p-6 rounded-xl shadow-lg">
-            <label class="block text-gray-700 font-semibold mb-2">Producto / Pedido:</label>
-            <textarea id="pedido" rows="3" class="w-full border rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: 2 Arroz Superarroz, 1 Leche..."></textarea>
+        <!-- 2. VENTAS Y COMPRAS (Operación) -->
+        <section class="bg-white p-5 rounded-2xl shadow-md space-y-4">
+            <div class="flex gap-2">
+                <button onclick="showTab('venta')" id="tabVenta" class="flex-1 py-2 rounded-lg font-bold bg-blue-600 text-white">VENTA</button>
+                <button onclick="showTab('compra')" id="tabCompra" class="flex-1 py-2 rounded-lg font-bold bg-slate-200 text-slate-600">COMPRA/INV</button>
+            </div>
 
-            <label class="block text-gray-700 font-semibold mb-2">Cliente:</label>
-            <input type="text" id="cliente" class="w-full border rounded-lg p-3 mb-6" placeholder="Nombre del cliente">
+            <!-- Formulario Venta -->
+            <div id="formVenta" class="space-y-3">
+                <input type="text" id="prodVenta" placeholder="¿Qué producto vendió?" class="w-full p-3 border rounded-xl bg-gray-50">
+                <div class="flex gap-2">
+                    <input type="number" id="valVenta" placeholder="$ Precio" class="w-1/2 p-3 border rounded-xl">
+                    <input type="number" id="costVenta" placeholder="$ Costo" class="w-1/2 p-3 border rounded-xl">
+                </div>
+                <button onclick="procesarVenta()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg">REGISTRAR VENTA</button>
+            </div>
 
-            <button onclick="enviarPedido()" class="w-full btn-vibras py-4 rounded-xl font-bold text-lg shadow-lg flex justify-center items-center gap-2">
-                <i class="fab fa-whatsapp text-2xl"></i> ENVIAR POR WHATSAPP
-            </button>
-        </div>
+            <!-- Formulario Compra (Inventario) -->
+            <div id="formCompra" class="hidden space-y-3">
+                <input type="text" id="prodNombre" placeholder="Nombre del Producto" class="w-full p-3 border rounded-xl">
+                <input type="number" id="prodCant" placeholder="Cantidad que entra" class="w-full p-3 border rounded-xl">
+                <button onclick="actualizarInventario()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold">CARGAR A INVENTARIO</button>
+            </div>
+        </section>
+
+        <!-- 3. ALERTAS DE REORDEN (Para no estar agotados) -->
+        <section class="bg-white p-5 rounded-2xl shadow-md">
+            <h2 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle text-orange-500"></i> Pedidos Sugeridos
+            </h2>
+            <div id="listaReorden" class="space-y-2 text-sm">
+                <!-- Se llena solo -->
+                <p class="text-gray-400 italic">Todo el inventario está al día.</p>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Footer Obligatorio -->
-    <footer class="bg-white text-center p-6 mt-auto border-t">
-        <p class="text-gray-600 text-sm italic">"Transformando negocios con energía"</p>
-        <p class="text-gray-800 font-bold mt-1">Hecha por Vibras Positivas HM</p>
-        <p class="text-xs text-gray-500 mt-2">© 2026 Todos los derechos reservados</p>
+    <!-- Footer Vibras Positivas HM -->
+    <footer class="fixed bottom-0 w-full bg-white border-t p-4 text-center shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Property of</p>
+        <p class="font-black text-blue-900">VIBRAS POSITIVAS HM</p>
     </footer>
 
     <script>
-        function enviarPedido() {
-            const pedido = document.getElementById('pedido').value;
-            const cliente = document.getElementById('cliente').value;
-            const phone = "573100000000"; // Aquí iría tu número o el del tendero
+        let db = JSON.parse(localStorage.getItem('vp_data')) || { ventas: 0, ganancia: 0, inventario: {} };
 
-            if (!pedido) {
-                alert("Por favor escribe el pedido");
-                return;
-            }
-
-            // Iniciamos la geolocalización
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
-                    
-                    const mensaje = encodeURIComponent(
-                        `*NUEVO PEDIDO - VIBRAS POSITIVAS HM*\n\n` +
-                        `*Cliente:* ${cliente}\n` +
-                        `*Pedido:* ${pedido}\n\n` +
-                        `📍 *Ubicación del negocio:* ${mapLink}`
-                    );
-
-                    window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
-                }, () => {
-                    // Si el usuario niega el permiso de ubicación
-                    const mensajeSimple = encodeURIComponent(
-                        `*NUEVO PEDIDO - VIBRAS POSITIVAS HM*\n\n` +
-                        `*Cliente:* ${cliente}\n` +
-                        `*Pedido:* ${pedido}`
-                    );
-                    window.open(`https://wa.me/${phone}?text=${mensajeSimple}`, '_blank');
-                });
+        function showTab(type) {
+            if(type === 'venta') {
+                document.getElementById('formVenta').classList.remove('hidden');
+                document.getElementById('formCompra').classList.add('hidden');
+                document.getElementById('tabVenta').className = "flex-1 py-2 rounded-lg font-bold bg-blue-600 text-white";
+                document.getElementById('tabCompra').className = "flex-1 py-2 rounded-lg font-bold bg-slate-200 text-slate-600";
+            } else {
+                document.getElementById('formVenta').classList.add('hidden');
+                document.getElementById('formCompra').classList.remove('hidden');
+                document.getElementById('tabCompra').className = "flex-1 py-2 rounded-lg font-bold bg-slate-800 text-white";
+                document.getElementById('tabVenta').className = "flex-1 py-2 rounded-lg font-bold bg-slate-200 text-slate-600";
             }
         }
+
+        function actualizarVista() {
+            document.getElementById('displayVentas').innerText = `$ ${db.ventas.toLocaleString()}`;
+            document.getElementById('displayGanancia').innerText = `$ ${db.ganancia.toLocaleString()}`;
+            
+            // Lógica de Reorden (Agotados)
+            const lista = document.getElementById('listaReorden');
+            lista.innerHTML = "";
+            let tieneAlertas = false;
+
+            for (let prod in db.inventario) {
+                if (db.inventario[prod] <= 3) { // Alerta si quedan 3 o menos
+                    tieneAlertas = true;
+                    lista.innerHTML += `
+                        <div class="flex justify-between bg-orange-50 p-2 rounded border border-orange-100">
+                            <span class="font-medium">${prod}</span>
+                            <span class="text-orange-600 font-bold">Solo quedan: ${db.inventario[prod]}</span>
+                        </div>`;
+                }
+            }
+            if(!tieneAlertas) lista.innerHTML = '<p class="text-gray-400 italic">Todo el inventario está al día.</p>';
+        }
+
+        function procesarVenta() {
+            const prod = document.getElementById('prodVenta').value.toLowerCase();
+            const val = parseFloat(document.getElementById('valVenta').value);
+            const cost = parseFloat(document.getElementById('costVenta').value);
+
+            if(isNaN(val) || isNaN(cost)) return alert("Pon los precios");
+
+            db.ventas += val;
+            db.ganancia += (val - cost);
+
+            // Descontar de inventario si existe
+            if(db.inventario[prod]) {
+                db.inventario[prod] -= 1;
+            }
+
+            guardar();
+            document.getElementById('valVenta').value = "";
+            document.getElementById('costVenta').value = "";
+        }
+
+        function actualizarInventario() {
+            const prod = document.getElementById('prodNombre').value.toLowerCase();
+            const cant = parseInt(document.getElementById('prodCant').value);
+
+            if(!prod || isNaN(cant)) return alert("Llena los datos del producto");
+
+            db.inventario[prod] = (db.inventario[prod] || 0) + cant;
+            
+            guardar();
+            document.getElementById('prodNombre').value = "";
+            document.getElementById('prodCant').value = "";
+            alert("Inventario cargado");
+        }
+
+        function guardar() {
+            localStorage.setItem('vp_data', JSON.stringify(db));
+            actualizarVista();
+        }
+
+        function resetearTodo() {
+            if(confirm("¿Cerrar día y limpiar todo?")) {
+                db.ventas = 0;
+                db.ganancia = 0;
+                guardar();
+            }
+        }
+
+        actualizarVista();
     </script>
 </body>
 </html>
